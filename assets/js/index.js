@@ -17,6 +17,28 @@ $(function () {
             layer.close(index);
         });
     });
+
+    // 点击 个人中心 的三个按钮
+    $('.layui-nav-child').on('click', function (e) {
+        if (e.target.innerHTML === '基本资料') {
+            let JQ = $('#user_info');
+            clearLaythis(JQ);
+            JQ.click();
+        }
+        if (e.target.innerHTML === '更换头像') {
+            let JQ = $('#user_avatar');
+            clearLaythis(JQ);
+            JQ.click();
+        }
+        if (e.target.innerHTML === '重置密码') {
+            let JQ = $('#user_pwd');
+            clearLaythis(JQ);
+            JQ.click();
+        }
+
+
+
+    })
 });
 
 // 获取用户的基本信息
@@ -76,3 +98,18 @@ function renderAvatar(user) {
     }
 }
 
+// // 清空this类,并添加新的类
+// function clearLaythis(newJQ) {
+//     if(newJQ.parent.Class layui-nav-itemed)
+//     $('.layui-this').removeClass('layui-this');
+//     newJQ.addClass('layui-this');
+// } 
+
+// 清空this类,并添加新的类
+function clearLaythis(newJQ) {
+    if (!newJQ.parent().parent().parent().hasClass('layui-nav-itemed')) {
+        newJQ.parent().parent().parent().addClass('layui-nav-itemed');
+    }
+    $('.layui-this').removeClass('layui-this');
+    newJQ.addClass('layui-this');
+}
