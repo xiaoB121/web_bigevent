@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <link rel="stylesheet" href="/assets/lib/layui/css/layui.css">
+    <link rel="stylesheet" href="/assets/css/article/art_list.css">
+</head>
+
+<body>
+    <!-- 卡片区域 -->
+    <div class="layui-card">
+        <div class="layui-card-header">文章列表</div>
+        <div class="layui-card-body">
+            <!-- 筛选区 -->
+            <form class="layui-form" id="form-search">
+                <div class="layui-form-item layui-inline">
+                    <select name="cate_id"></select>
+                </div>
+
+                <div class="layui-form-item layui-inline">
+                    <select name="state">
+                        <option value="">所有状态</option>
+                        <option value="已发布">已发布</option>
+                        <option value="草稿">草稿</option>
+                    </select>
+                </div>
+
+                <div class="layui-form-item layui-inline">
+                    <button class="layui-btn" lay-submit lay-filter="formDemo">筛选</button>
+                </div>
+            </form>
+            <!-- 列表区 -->
+            <table class="layui-table">
+                <colgroup>
+                    <col />
+                    <col width="150" />
+                    <col width="180" />
+                    <col width="150" />
+                    <col width="150" />
+                </colgroup>
+                <thead>
+                    <tr>
+                        <th>文章标题</th>
+                        <th>分类</th>
+                        <th>发表时间</th>
+                        <th>状态</th>
+                        <th>操作</th>
+                    </tr>
+                </thead>
+                <tbody>
+
+                </tbody>
+            </table>
+            <!-- 分页区 -->
+            <div id="pageBox"></div>
+        </div>
+    </div>
+
+    <script type="text/html" id="">
+        <option value="">所有分类</option>
+        <option value="010">北京</option>
+        <option value="021">上海</option>
+        <option value="0571">杭州</option>
+    </script>
+
+    <!-- 列表数据的模板引擎 -->
+    <script type="text/html" id="tpl-table">
+        {{each data}}
+        <tr>
+            <td>{{$value.title}}</td>
+            <td>{{$value.cate_name}}</td>
+            <td>{{$value.pub_date|dataFormat}}</td>
+            <td>{{$value.state}}</td>
+            <td>
+                <!-- <button type="button" class="layui-btn layui-btn-xs" data-id="{{$value.Id}}">编辑</button> -->
+                <button type="button" class="layui-btn layui-btn-xs layui-btn-danger btn-delete" data-id="{{$value.Id}}">删除</button>
+            </td>
+        </tr>
+        {{/each}}
+    </script>
+
+    <!-- 筛选-文章类别 -->
+    <script type="text/html" id="tpl-cate">
+        <option value="">请选择文章类别</option>
+        {{each data}}
+        <option value="{{$value.Id}}">{{$value.name}}</option>
+        {{/each}}
+    </script>
+
+    <!-- 三方js -->
+    <script src="/assets/lib/layui/layui.all.js"></script>
+    <script src="/assets/lib/jquery.js"></script>
+    <script src="/assets/lib/template-web.js"></script>
+    <!-- 导入自己的js 脚本 -->
+    <script src="/assets/js/baseAPI.js"></script>
+    <script>
+        let layer = layui.layer;
+        let form = layui.form;
+        let laypage = layui.laypage;
+
+        // 定义一个参数对象，提交到服务器
+        let q = {
+            pagenum: 1, // 页码值
+            pagesize: 1, // 每页显示几条数据
+            cate_id: '', // 文章分类的id
+            state: '' // 文章的发布状态
+        }
+
+        // 获取文章列表数据
+        initTable();
+        // 加载文章分类
+        initCate();
+
+        // 绑定筛选事件
+        $('#form-search').on('submit', function (e) {
+            e.preventDefault();
+            q.cate_id = $('[name=cate_id]').val();
+            q.state = $('[name=state]').val();
+            initTable();
+        });
+
+        $('tbody').on('click', '.btn-delete', function () {
+            let id = $(this).attr('data-id');
+            //弹出框
+            layer.confirm('确定要删除吗?', { icon: 2, title: '提示' }, function (index) {
+                //do something
+                $.ajax({
+                    method: 'GET',
+                    url: '/my/article/delete/' + id,
+                    success: function (res) {
+                        console.log(res);
+                        if (res.status !== 0) {
+                            return layer.msg('删除失败！');
+                        }
+                        layer.msg('删除成功！');
+                        layer.close(index);
+                        initTable();
+                    }
+                });
+
+            });
+        });
+
+        // 获取文章列表数据的方法
+        function initTable() {
+            $.ajax({
+                method: 'GET',
+                url: '/my/article/list',
+                data: q,
+                success: function (res) {
+                    if (res.status !== 0) {
+                        return layer.msg('获取文章列表失败！');
+                    }
+                    // console.log(res);
+                    // 引擎渲染页面数据
+                    let htmlStr = template('tpl-table', res);
+                    $('tbody').html(htmlStr);
+                    // 分页方法
+                    renderPage(res.total);
+                }
+            })
+        };
+
+        // 定义加载文章分类的方法
+        function initCate() {
+            // 发送ajax请求，获取文本类别
+            $.ajax({
+                method: 'GET',
+                url: '/my/article/cates',
+                success: function (res) {
+                    if (res.status !== 0) {
+                        return layer.msg('初始化文章分类失败！');
+                    }
+                    // 调用模板引擎，渲染分类的下拉菜单
+                    let htmlStr = template('tpl-cate', res);
+                    $('[name=cate_id]').html(htmlStr);
+                    // 一定要记得调用 form.render()方法，刷新表单
+                    form.render();
+                }
+            });
+        }
+
+        function renderPage(total) {
+            laypage.render({
+                elem: 'pageBox', //分页容器的id
+                count: total, // 总数据条数
+                limit: q.pagesize,//每页显示几条数据
+                curr: q.pagenum, //设置默认被选中的分页
+                layout: ['count', 'limit', 'prev', 'page', 'next', 'skip'],
+                limits: [1, 2, 3, 5, 10],
+                // 分页发生切换的时候，触发 jump 回调
+                jump: function (obj, first) {
+                    // 把最新的页码值，赋值到q这个查询参数对象中
+                    q.pagenum = obj.curr;
+                    q.pagesize = obj.limit;
+                    // first表示通过哪种方式触发jump，
+                    // true 通过laypage.render()方法触发的jump回调的
+                    // false 通过点击页码触发jump回调
+                    if (!first) {
+                        initTable();
+                    }
+                }
+            });
+        }
+
+
+
+        // 定义美化时间的过滤器
+        template.defaults.imports.dataFormat = function (date) {
+            const dt = new Date(date);
+
+            let year = dt.getFullYear();
+            let month = padZero(dt.getMonth() + 1);
+            let date1 = padZero(dt.getDate());
+
+            let hour = padZero(dt.getHours());
+            let min = padZero(dt.getMinutes());
+            let sec = padZero(dt.getSeconds());
+            return `${year}-${month}-${date1} ${hour}:${min}:${sec}`;
+        }
+        // 定义补零的函数
+        function padZero(n) {
+            return n > 9 ? n : '0' + n;
+        }
+    </script>
+    <script src="/assets/js/article/art_list.js"></script>
+</body>
+
+</html>
