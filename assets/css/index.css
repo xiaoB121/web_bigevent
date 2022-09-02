@@ -47,3 +47,11 @@ iframe {
     width: 40px;
     height: 40px;
 }
+
+.logo::after {
+    content: "文 章 管 理 系 统";
+}
+
+.logo img {
+    height: 80%;
+}

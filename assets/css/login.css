@@ -52,3 +52,20 @@ body {
     font-size: 12px;
 }
 
+.layui-main {
+    position: relative;
+    top: 20px;
+}
+
+.layui-main::after {
+    content: '文章管理系统';
+    position: absolute;
+    top: 5px;
+    color: #fff;
+    font-size: 30px;
+}
+
+.layui-main img {
+    height: 60px;
+    margin-right: 10px;
+}
