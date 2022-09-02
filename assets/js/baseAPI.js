@@ -4,7 +4,8 @@
 $.ajaxPrefilter(function (options) {
     // console.log(options.url);
     //发起真正的ajax请求之前，同一凭借根路径
-    options.url = 'http://www.liulongbin.top:3007' + options.url;
+    // options.url = 'http://www.liulongbin.top:3007' + options.url;
+    options.url = 'http://127.0.0.1:3007' + options.url;
 
     // 统一为有权限的接口，设置headers请求头
     if (options.url.indexOf('/my/') !== -1) {

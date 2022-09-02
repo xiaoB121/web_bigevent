@@ -35,7 +35,6 @@ $(function () {
             url: '/my/article/addcates',
             data: $(this).serialize(),
             success: function (res) {
-                console.log(res);
                 if (res.status !== 0) {
                     return layer.msg('新增分类失败！');
                 }
@@ -83,6 +82,8 @@ $(function () {
                     return layer.msg(res.message);
                 }
                 layer.msg('更新分类信息成功！');
+                layer.close(indexEdit);
+                initArtCateList();
             }
         });
     });
